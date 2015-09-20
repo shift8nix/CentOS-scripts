@@ -1,11 +1,10 @@
 #!/bin/bash
-#Fri Aug  7 14:35:26 UTC 2015
-systemctl disable firewalld
-systemctl stop firewalld
-systemctl mask firewalld
+#Sun Sep 20 17:06:23 UTC 2015
 yum -y install iptables-services
-systemctl start iptables
+systemctl mask firewalld
 systemctl enable iptables
+systemctl stop firewalld
+systemctl start iptables
 echo "*filter
 :INPUT DROP [0:0]
 :FORWARD DROP [0:0]
