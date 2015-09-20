@@ -12,6 +12,6 @@ echo "*filter
 -A INPUT -i lo -j ACCEPT
 -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 # allowed list - edit as necessary
--A INPUT -s 127.0.0.1 -j ACCEPT
+-A INPUT -p tcp --dport 22 -j ACCEPT
 COMMIT" > /etc/sysconfig/iptables
 systemctl restart iptables
