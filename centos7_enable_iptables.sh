@@ -1,6 +1,5 @@
 #!/bin/bash
 #Sun Sep 20 17:06:23 UTC 2015
-#svn to git test
 yum -y install iptables-services
 systemctl mask firewalld
 systemctl enable iptables
