@@ -1,0 +1,45 @@
+#! /bin/bash
+# Mon  4 Jan 19:03:21 UTC 2016
+# CentOS7 repo and kickstart install on Reaspberry Pi Zero
+# It's assumed that network is already configured and system is updated
+# It's highly suggested to use screen utility as it takes long time to rsync repo
+echo "starting script"
+echo "install and config of packages"
+apt-get -y install tftpd-hpa pxelinux syslinux-common apache2 createrepo rsync
+systemctl enable apache2.service
+rm /var/www/html/index.html
+mkdir /var/www/html/centos7
+createrepo /var/www/html/centos7/ 
+echo "downloading repo for CentOS7"
+rsync -ahvz --progress rsync://rsync.mirrorservice.org/mirror.centos.org/7/os/x86_64/ /var/www/html/centos7/ 2>&1
+echo "0 3 * * * rsync -avhz --progress rsync://rsync.mirrorservice.org/mirror.centos.org/7/os/x86_64/ /var/www/html/centos7/ \n " >> /var/spool/cron/crontabs/root
+echo "setting up pxe"
+systemctl enable tftpd-hpa.service
+mkdir /srv/tftp/centos7
+cp /var/www/html/centos7/images/pxeboot/vmlinuz /srv/tftp/centos7
+cp /var/www/html/centos7/images/pxeboot/initrd.img /srv/tftp/centos7
+cp /usr/lib/PXELINUX/pxelinux.0 /srv/tftp/
+cp /usr/lib/syslinux/modules/bios/vesamenu.c32 /srv/tftp/
+cp /usr/lib/syslinux/modules/bios/ldlinux.c32 /srv/tftp/
+cp /usr/lib/syslinux/modules/bios/libcom32.c32 /srv/tftp/
+cp /usr/lib/syslinux/modules/bios/libutil.c32 /srv/tftp/
+mkdir /srv/tftp/pxelinux.cfg
+cat > /srv/tftp/pxelinux.cfg/default << EOF
+DEFAULT vesamenu.c32 
+TIMEOUT 600
+ONTIMEOUT BootLocal
+PROMPT 0
+NOESCAPE 1
+LABEL BootLocal
+        localboot 0
+        TEXT HELP
+        Boot to local hard disk
+        ENDTEXT
+LABEL 2
+        MENU LABEL Centos7
+        KERNEL centos7/vmlinuz
+        APPEND initrd=centos7/initrd.img inst.repo=http://10.0.0.102/centos7 ramdisk_size=100000 ip=dhcp inst.ks=http://10.0.0.102/kickst_files/centos7_minimal_kickstart.cfg
+EOF
+mkdir /var/www/html/kickst_files
+wget http://blog.colowings.com/centos7_minimal_kickstart.cfg -O /var/www/html/kickst_files/centos7_minimal_kickstart.cfg
+echo "Done. Configure DHCP with options 66 and 67"
