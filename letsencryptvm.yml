@@ -1,0 +1,42 @@
+---
+# playbook replaces default certs on ssl sites with letsencrypt certs
+# for use on CentOS 6.7 LAMP Virtualmin server
+# !!! will stop webserver during cert generation !!!
+- hosts: webserver
+  remote_user: user
+  sudo: yes
+  vars:
+   my_email: user@example.com
+  tasks:
+  - name: retrieve the list of home directories
+    command: /usr/sbin/virtualmin list-domains --name-only
+    register: my_servers
+  - name: install epel-release
+    yum: name=epel-release state=latest
+  - name: Copy rpm file to server
+    get_url: url=https://rhel6.iuscommunity.org/ius-release.rpm dest=./ius-release.rpm
+  - name: Install package.
+    yum: name=ius-release.rpm state=installed
+  - name: Install  python 2.7
+    yum: name={{item}} enablerepo=ius state=installed
+    with_items: ['git', 'python27', 'python27-devel', 'python27-pip', 'python27-setuptools', 'python27-virtualenv']
+  - name: git letsencrypt
+    git: repo=https://github.com/letsencrypt/letsencrypt  dest=/opt/letsencrypt
+  - name: stop webserver
+    service: name=httpd state=stopped
+  - name: generate certs if not present
+    command: /opt/letsencrypt/letsencrypt-auto certonly --standalone --email {{my_email}} -d {{item}} -d www.{{item}} creates=/etc/letsencrypt/live/{{item}}/cert.pem
+    with_items: '{{my_servers.stdout_lines}}'
+  - name: start webserver
+    service: name=httpd state=started
+# enable auto renewal
+  - name: set up renewal script
+    copy: content="#! /bin/bash\nservice httpd stop\n/opt/letsencrypt-auto renew -nvv --standalone --force-renewal\nservice httpd start\n" dest=/opt/letsencrypt/renew_script force=no group=root owner=root mode=0770
+  - name: eable cron for renewal
+    cron: name="renew lets encrypt" month="*/2" job="/opt/letsencrypt/renew_script"
+# this part is virtualmin specific for cert replacement
+  - name: install certs in domains
+    command: /usr/sbin/virtualmin install-cert --domain {{item}} --cert /etc/letsencrypt/live/{{item}}/cert.pem --key /etc/letsencrypt/live/{{item}}/privkey.pem --ca /etc/letsencrypt/live/{{item}}/chain.pem
+    with_items: '{{my_servers.stdout_lines}}'
+  - name: reload webserver config
+    service: name=httpd state=reloaded
