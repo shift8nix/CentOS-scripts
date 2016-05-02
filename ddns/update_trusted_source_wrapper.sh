@@ -1,7 +1,7 @@
 #! /bin/bash
 for line in $(grep -v '^#' ./domains);
  do
-  ./update_trusted_source.sh $line
+  ./update_trusted_source.sh $line $1
  done
 exit
 

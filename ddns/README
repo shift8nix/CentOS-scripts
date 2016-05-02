@@ -14,3 +14,7 @@ how about adding more than one source? Use wrapper around this script. Create fi
 
 then run it with:
 ./update_trusted_source_wrapper.sh
+
+you can specify zone as well
+
+./update_trusted_source_wrapper.sh public
