@@ -1,4 +1,5 @@
 #! /bin/bash
+cd $(dirname $0)
 # vars
 dyn_name="$1"
 # newip - use first record returned by dig if multiple
