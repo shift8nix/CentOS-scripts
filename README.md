@@ -12,3 +12,7 @@ It's selinux enforcing
 
 Part automate PXE and Repo setup for CentOS7 on raspberry pi
 From here - http://blog.colowings.com/pxe-and-centos7-repo-on-raspberry-pi-zero
+
+- ddns
+
+Bash scrip for updating source ip in firewalld from dynamic dns 
