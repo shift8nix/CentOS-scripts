@@ -16,3 +16,13 @@ From here - http://blog.colowings.com/pxe-and-centos7-repo-on-raspberry-pi-zero
 - ddns
 
 Bash scrip for updating source ip in firewalld from dynamic dns 
+
+=================================================================
+
+To clone subfolder use
+
+git clone –depth 1 [repo root] [name of destination directory]
+
+cd [name of destination directory]
+
+git filter-branch –prune-empty –subdirectory-filter [path to sub-dir] HEAD
