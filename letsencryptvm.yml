@@ -31,7 +31,7 @@
     service: name=httpd state=started
 # enable auto renewal
   - name: set up renewal script
-    copy: content="#! /bin/bash\nservice httpd stop\n/opt/letsencrypt-auto renew -nvv --standalone --force-renewal\nservice httpd start\n" dest=/opt/letsencrypt/renew_script force=no group=root owner=root mode=0770
+    copy: content="#! /bin/bash\n/sbin/service httpd stop\n/opt/letsencrypt/letsencrypt-auto renew -nvv --standalone --force-renewal\n/sbin/service httpd start\n" dest=/opt/letsencrypt/renew_script force=no group=root owner=root mode=0770
   - name: eable cron for renewal
     cron: name="renew lets encrypt" month="*/2" job="/opt/letsencrypt/renew_script"
 # this part is virtualmin specific for cert replacement
